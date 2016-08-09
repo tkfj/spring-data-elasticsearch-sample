@@ -1,6 +1,8 @@
 package my.sample.elasticsearch.service;
 
 import my.sample.elasticsearch.util.JsonGenerator;
+import org.elasticsearch.action.admin.cluster.node.info.NodeInfo;
+import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -8,8 +10,14 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.plugins.PluginInfo;
+import org.elasticsearch.plugins.PluginManagerCliParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ESServiceImpl implements ESService {
@@ -22,6 +30,32 @@ public class ESServiceImpl implements ESService {
 
         prepareIndex(client);
 
+    }
+
+    @Override
+    public List<String> handlePlugin(String command, String target) {
+
+        String[] args = {command, target};
+        new PluginManagerCliParser().execute(args);
+
+        return showPlugin();
+    }
+
+    @Override
+    public List<String> showPlugin() {
+
+        NodesInfoResponse nodesInfoResponse = client.admin().cluster().prepareNodesInfo().setPlugins(true).get();
+        List<String> plugins = new ArrayList<>();
+        for (NodeInfo nodeInfo : nodesInfoResponse.getNodes()) {
+
+            plugins.addAll(
+                nodeInfo.getPlugins().getPluginInfos()
+                    .stream()
+                    .map(PluginInfo::toString)
+                    .collect(Collectors.toList()));
+        }
+
+        return plugins;
     }
 
 
