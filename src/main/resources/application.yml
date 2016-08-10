@@ -1,9 +1,20 @@
+# default
 spring:
-  profiles: prod
+  profiles:
+    active: dev-local
+
+---
+spring:
+  profiles: dev-remote
   data:
     elasticsearch:
       cluster-nodes: 127.0.0.1:9300
 
 ---
 spring:
-  profiles: dev
+  profiles: dev-local
+  data:
+    elasticsearch:
+      properties:
+        http:
+          enabled: true
