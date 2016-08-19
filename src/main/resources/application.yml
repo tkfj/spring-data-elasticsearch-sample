@@ -18,3 +18,13 @@ spring:
       properties:
         http:
           enabled: true
+
+---
+spring:
+  profiles: test
+  data:
+    elasticsearch:
+      properties:
+        http:
+          enabled: true
+        network.host: 0.0.0.0
